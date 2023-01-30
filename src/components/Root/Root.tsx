@@ -1,8 +1,9 @@
-import { Button } from "@mui/material";
-import { Map } from "../Map/Map";
-import "./Root.css";
+import React from 'react';
+import { Button } from '@mui/material';
+import Map from '../Map/Map';
+import './Root.css';
 
-export const Root = () => {
+function Root() {
   return (
     <div className="app-container">
       <Map className="map" />
@@ -11,4 +12,6 @@ export const Root = () => {
       </aside>
     </div>
   );
-};
+}
+
+export default Root;
