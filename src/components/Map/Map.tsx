@@ -3,6 +3,7 @@ import './Map.css';
 
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
+import AvailableMarkers from './comonents/Markers/AvailableMarkers';
 
 const batumiCoords: LatLngExpression | undefined = [41.643414, 41.6399];
 
@@ -16,6 +17,7 @@ function Map({ className }: MapProps) {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
             />
+            <AvailableMarkers />
         </MapContainer>
     );
 }
