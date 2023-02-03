@@ -1,6 +1,10 @@
-.app-container {
+main {
+    text-align: center;
+    color: darkgrey;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    height: 100vh;
 }
 
 aside {
@@ -17,8 +21,7 @@ aside {
 }
 
 @media screen and (min-width: 420px) {
-    .app-container {
+    main {
         flex-direction: row;
     }
-
 }
