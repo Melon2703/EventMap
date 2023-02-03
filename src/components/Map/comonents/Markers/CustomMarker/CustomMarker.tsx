@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Marker, useMapEvents } from 'react-leaflet';
+import { useModal } from '../../../../../contexts/ModalContext/ModalContext';
 import { useMarksContext } from '../../../../Root/MarksContextProvider';
 
 type MarkerPosition = { lat: number; lng: number } | null;
@@ -8,6 +9,8 @@ interface CustomMarkerProps {
     order: number;
 }
 function CustomMarker({ order }: CustomMarkerProps) {
+    const { onModalOpen } = useModal();
+
     const [position, setPosition] = useState<MarkerPosition>(null);
 
     const { setMarksCount, marksCount } = useMarksContext();
@@ -16,15 +19,16 @@ function CustomMarker({ order }: CustomMarkerProps) {
 
     useMapEvents({
         click(event) {
-            if (isAvailable && !position) {
-                const { lat, lng } = event.latlng;
+            // TODO: интерактив и логика устоновки метки будут тут
+            onModalOpen().then((isContinue) => {
+                if (isContinue && isAvailable && !position) {
+                    const { lat, lng } = event.latlng;
 
-                // TODO: интерактив и логика устоновки метки будут тут
+                    setPosition({ lat, lng });
 
-                setPosition({ lat, lng });
-
-                setMarksCount((prev) => prev + 1);
-            }
+                    setMarksCount((prev) => prev + 1);
+                }
+            });
         },
     });
 
@@ -42,7 +46,7 @@ function CustomMarker({ order }: CustomMarkerProps) {
         return null;
     }
 
-    return <Marker position={[position.lat, position.lng]} interactive={false} />;
+    return <Marker position={[position.lat, position.lng]} />;
 }
 
 export default CustomMarker;

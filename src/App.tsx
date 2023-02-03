@@ -1,12 +1,12 @@
 import React from 'react';
-import './App.css';
 import Root from './components/Root/Root';
+import { ModalProvider } from './contexts/ModalContext/ModalContext';
 
 function App() {
     return (
-        <div className="App">
+        <ModalProvider>
             <Root />
-        </div>
+        </ModalProvider>
     );
 }
 

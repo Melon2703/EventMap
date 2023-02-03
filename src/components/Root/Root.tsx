@@ -2,17 +2,17 @@ import React from 'react';
 import Map from '../Map/Map';
 
 import './Root.css';
-import { MarksContextProvider } from './MarksContextProvider';
 import Sidebar from '../Map/comonents/Sidebar/Sidebar';
+import { MarksContextProvider } from './MarksContextProvider';
 
 function Root() {
     return (
-        <MarksContextProvider>
-            <div className="app-container">
+        <main>
+            <MarksContextProvider>
                 <Map className="map" />
                 <Sidebar />
-            </div>
-        </MarksContextProvider>
+            </MarksContextProvider>
+        </main>
     );
 }
 
