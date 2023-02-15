@@ -18,5 +18,6 @@ module.exports = {
     plugins: ['react', '@typescript-eslint'],
     rules: {
         indent: 'off',
+        'react/jsx-props-no-spreading': 'off',
     },
 };

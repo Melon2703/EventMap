@@ -24,4 +24,8 @@ aside {
     main {
         flex-direction: row;
     }
+
+    aside {
+        flex-direction: column;
+    }
 }
