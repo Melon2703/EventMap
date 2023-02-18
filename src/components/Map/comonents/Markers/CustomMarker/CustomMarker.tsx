@@ -1,52 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { Marker, useMapEvents } from 'react-leaflet';
-import { useModal } from '../../../../../contexts/ModalContext/ModalContext';
-import { useMarksContext } from '../../../../Root/MarksContextProvider';
+import React from 'react';
+import { Marker, Tooltip } from 'react-leaflet';
 
-type MarkerPosition = { lat: number; lng: number } | null;
+import L, { LatLngLiteral } from 'leaflet';
+import PlaceRoundedIcon from '@mui/icons-material/PlaceRounded';
+import ReactDOMServer from 'react-dom/server';
+import EventInfo from '../../../../../contexts/ModalContext/components/SetMarker/types';
+
+const customIcon = new L.DivIcon({
+    html: ReactDOMServer.renderToString(<PlaceRoundedIcon style={{ fill: 'blue' }} />),
+    className: 'custom-icon',
+    iconSize: [50, 50],
+});
 
 interface CustomMarkerProps {
-    order: number;
+    position: LatLngLiteral;
+    eventInfo: EventInfo;
 }
-function CustomMarker({ order }: CustomMarkerProps) {
-    const { onModalOpen } = useModal();
-
-    const [position, setPosition] = useState<MarkerPosition>(null);
-
-    const { setMarksCount, marksCount } = useMarksContext();
-
-    const isAvailable = marksCount >= order;
-
-    useMapEvents({
-        click(event) {
-            // TODO: интерактив и логика устоновки метки будут тут
-            onModalOpen().then((isContinue) => {
-                if (isContinue && isAvailable && !position) {
-                    const { lat, lng } = event.latlng;
-
-                    setPosition({ lat, lng });
-
-                    setMarksCount((prev) => prev + 1);
-                }
-            });
-        },
-    });
-
-    useEffect(() => {
-        if (
-            marksCount < order ||
-            // обработка кейса после сброса marksCount
-            order === marksCount
-        ) {
-            setPosition(null);
-        }
-    }, [isAvailable, marksCount, order]);
-
-    if (!(isAvailable && position && position.lat !== 0)) {
-        return null;
-    }
-
-    return <Marker position={[position.lat, position.lng]} />;
+function CustomMarker({ position, eventInfo }: CustomMarkerProps) {
+    return (
+        <Marker position={[position.lat, position.lng]} icon={customIcon}>
+            <Tooltip direction="bottom">{eventInfo.name}</Tooltip>
+        </Marker>
+    );
 }
 
 export default CustomMarker;

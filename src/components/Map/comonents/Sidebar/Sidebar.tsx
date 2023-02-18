@@ -1,17 +1,24 @@
-import { Button } from '@mui/material';
+import { IconButton } from '@mui/material';
+
 import React, { useCallback } from 'react';
-import { useMarksContext } from '../../../Root/MarksContextProvider';
+import ListAltRoundedIcon from '@mui/icons-material/ListAltRounded';
+
+import './Sidebar.css';
+import { useModal } from '../../../../contexts/ModalContext/ModalContext';
+import { ModalTypes } from '../../../../contexts/ModalContext/types';
 
 function Sidebar() {
-    const { setMarksCount } = useMarksContext();
+    const { onModalOpen } = useModal();
 
-    const clearMarks = useCallback(() => setMarksCount(0), [setMarksCount]);
+    const showMarkersList = useCallback(() => {
+        onModalOpen(ModalTypes.SHOW_LIST_OF_POINT);
+    }, [onModalOpen]);
 
     return (
         <aside>
-            <Button onClick={clearMarks} variant="text">
-                Clear
-            </Button>
+            <IconButton className="icon" onClick={showMarkersList}>
+                <ListAltRoundedIcon />
+            </IconButton>
         </aside>
     );
 }

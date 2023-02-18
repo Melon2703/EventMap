@@ -3,15 +3,14 @@ import Map from '../Map/Map';
 
 import './Root.css';
 import Sidebar from '../Map/comonents/Sidebar/Sidebar';
-import { MarksContextProvider } from './MarksContextProvider';
+import User from '../User/User';
 
 function Root() {
     return (
         <main>
-            <MarksContextProvider>
-                <Map className="map" />
-                <Sidebar />
-            </MarksContextProvider>
+            <Map className="map" />
+            <Sidebar />
+            <User />
         </main>
     );
 }

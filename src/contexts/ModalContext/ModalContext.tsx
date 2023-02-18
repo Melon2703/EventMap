@@ -1,40 +1,48 @@
-import { Box, Button, Modal, SxProps, Theme } from '@mui/material';
+import { Modal } from '@mui/material';
 import React, {
     createContext,
-    useState,
     useContext,
     useMemo,
     useCallback,
     PropsWithChildren,
     useLayoutEffect,
+    useReducer,
 } from 'react';
+import ListOfMarkers from './components/ListOfMarkers';
+// eslint-disable-next-line import/no-cycle
+import SetPoint from './components/SetMarker/SetMarker';
+import EventInfo from './components/SetMarker/types';
+import reducer from './reducer';
+import { ActionTypes, ModalProps, ModalState, ModalTypes } from './types';
 
 interface IModalContext {
     isOpen: boolean;
-    onModalOpen: () => Promise<unknown>;
+    onModalOpen: (modalType: ModalTypes, callback?: () => void) => void;
     onModalClose: () => void;
 }
 
 const ModalContext = createContext<IModalContext>({
     isOpen: false,
-    onModalOpen: () => Promise.resolve(true),
+    onModalOpen: () => {},
     onModalClose: () => {},
 });
 
-const modalSx: SxProps<Theme> = {
-    width: 200,
-    background: 'white',
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    padding: '24px',
+const modalMapper: Record<ModalTypes, React.FC<ModalProps>> = {
+    [ModalTypes.SET_POINT]: SetPoint,
+    [ModalTypes.SHOW_LIST_OF_POINT]: ListOfMarkers,
 };
 
-class ModalPromiseController {
-    instance: null;
+interface IModalPromiseController {
+    instance: Promise<unknown> | null;
+    resolve: ((result: EventInfo) => void) | null;
+    getNewPromise: () => void;
+}
 
-    resolve: null;
+// TODO: унести
+class ModalPromiseController implements IModalPromiseController {
+    instance: Promise<EventInfo> | null;
+
+    resolve: ((result: EventInfo) => void) | null;
 
     constructor() {
         this.instance = null;
@@ -43,37 +51,31 @@ class ModalPromiseController {
     }
 
     getNewPromise() {
-        // @ts-expect-error
         this.instance = new Promise((resolve) => {
-            // @ts-expect-error
-            this.resolve = (result: boolean) => resolve(result);
+            this.resolve = (result: EventInfo) => resolve(result);
         });
     }
 }
 
-const modalPromise = new ModalPromiseController();
+export const modalPromise = new ModalPromiseController();
+
+const initialState: ModalState = {
+    isOpen: false,
+};
 
 export function ModalProvider({ children }: PropsWithChildren) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [state, dispatch] = useReducer(reducer, initialState);
 
-    const onModalOpen = useCallback(() => {
-        setIsOpen(true);
+    const { isOpen, type } = state;
 
-        return modalPromise.instance;
+    const onModalOpen = useCallback((modalType: ModalTypes, callback?: () => void) => {
+        callback?.();
+
+        dispatch({ type: ActionTypes.OPEN_MODAL, payload: { isOpen: true, type: modalType } });
     }, []);
 
     const onModalClose = useCallback(() => {
-        // @ts-expect-error
-        modalPromise.resolve(false);
-
-        setIsOpen(false);
-    }, []);
-
-    const onAccept = useCallback(() => {
-        // @ts-expect-error
-        modalPromise.resolve(true);
-
-        setIsOpen(false);
+        dispatch({ type: ActionTypes.CHANGE_VISIBILITY, payload: false });
     }, []);
 
     const contextValue = useMemo(() => ({ isOpen, onModalOpen, onModalClose }), [onModalClose, isOpen, onModalOpen]);
@@ -84,17 +86,19 @@ export function ModalProvider({ children }: PropsWithChildren) {
         }
     }, [isOpen]);
 
+    const ModalComponent = useMemo(() => (type ? modalMapper[type] : () => null), [type]);
+
     return (
-        // @ts-expect-error
         <ModalContext.Provider value={contextValue}>
             {children}
-            <Modal open={isOpen} onClose={onModalClose}>
-                <Box sx={modalSx}>
-                    <h2>Установка метки</h2>
-                    <p>Подтвердите установку метки</p>
-                    <Button onClick={onModalClose}>Close</Button>
-                    <Button onClick={onAccept}>Accept</Button>
-                </Box>
+            <Modal
+                sx={{
+                    backdropFilter: 'blur(10px)',
+                }}
+                open={isOpen}
+                onClose={onModalClose}
+            >
+                <ModalComponent dispatch={dispatch} />
             </Modal>
         </ModalContext.Provider>
     );
