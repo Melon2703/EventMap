@@ -9,32 +9,34 @@ export const errorHandler = () => console.log('Parsing error');
 
 interface IMarkersContext {
     stateMarkers: IMark[];
-    setStateMarkers: React.Dispatch<React.SetStateAction<IMark[]>>;
-    clearMarkers: () => void;
+    setMarker: (newMark: IMark) => void;
+    clearMarker: (clearId: string) => void;
 }
 
 const MarkersContext = createContext<IMarkersContext>({
     stateMarkers: [],
-    setStateMarkers: emptyFunc,
-    clearMarkers: emptyFunc,
+    setMarker: emptyFunc,
+    clearMarker: emptyFunc,
 });
 
 export const useMarkersContext = () => useContext(MarkersContext);
 
+// TODO: перейти на reactQuery, тогда этот контекст нужен не будет
 export function MarkersContextProvider({ children }: PropsWithChildren) {
     const [stateMarkers, setStateMarkers] = useState(markers);
 
-    const clearMarkers = useCallback(() => {
-        try {
-            localStorage.setItem('allMarkers', JSON.stringify([]));
-
-            setStateMarkers([]);
-        } catch {
-            errorHandler();
-        }
+    const setMarker = useCallback((newMark: IMark) => {
+        setStateMarkers((prev) => [...prev, newMark]);
     }, []);
 
-    const contextValue = useMemo(() => ({ stateMarkers, setStateMarkers, clearMarkers }), [clearMarkers, stateMarkers]);
+    const clearMarker = useCallback((clearId: string) => {
+        setStateMarkers((prev) => prev.filter(({ id }) => id !== clearId));
+    }, []);
+
+    const contextValue = useMemo(
+        () => ({ stateMarkers, setMarker, clearMarker }),
+        [clearMarker, setMarker, stateMarkers],
+    );
 
     return <MarkersContext.Provider value={contextValue}>{children}</MarkersContext.Provider>;
 }

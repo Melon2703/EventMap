@@ -32,11 +32,17 @@ const modalMapper: Record<ModalTypes, React.FC<ModalProps>> = {
     [ModalTypes.SHOW_LIST_OF_POINT]: ListOfMarkers,
 };
 
-// TODO: унести
-class ModalPromiseController {
-    instance: null;
+interface IModalPromiseController {
+    instance: Promise<unknown> | null;
+    resolve: ((result: EventInfo) => void) | null;
+    getNewPromise: () => void;
+}
 
-    resolve: null;
+// TODO: унести
+class ModalPromiseController implements IModalPromiseController {
+    instance: Promise<EventInfo> | null;
+
+    resolve: ((result: EventInfo) => void) | null;
 
     constructor() {
         this.instance = null;
@@ -45,9 +51,7 @@ class ModalPromiseController {
     }
 
     getNewPromise() {
-        // @ts-expect-error
         this.instance = new Promise((resolve) => {
-            // @ts-expect-error
             this.resolve = (result: EventInfo) => resolve(result);
         });
     }

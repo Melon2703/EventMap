@@ -1,7 +1,21 @@
-import { Box, Button, Checkbox, FormControlLabel, MenuItem, Select, SxProps, TextField, Theme } from '@mui/material';
+import {
+    Box,
+    Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    InputLabel,
+    MenuItem,
+    Select,
+    SxProps,
+    TextField,
+    Theme,
+} from '@mui/material';
 import React, { useCallback } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { useForm } from 'react-hook-form';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { v4 as uuid } from 'uuid';
 // eslint-disable-next-line import/no-cycle
 import { modalPromise, useModal } from '../../ModalContext';
 import EventInfo from './types';
@@ -17,22 +31,28 @@ const modalSx: SxProps<Theme> = {
     borderRadius: '24px',
 };
 
-const defaultValues: EventInfo = {
+const getDefaultValues = (ownerId: string, id: string, type = 'walk'): EventInfo => ({
     description: '',
     isPrivate: false,
-    // TODO: дефолтный тип брать в будущем на основе типа пользователя
-    type: 'walk',
+    type,
     name: '',
-};
+    ownerId,
+    // TODO: id должен стваиться на бэке
+    id,
+});
 
 function SetMarker() {
     const { onModalClose } = useModal();
 
-    const { register, handleSubmit, getValues } = useForm({ mode: 'onChange', defaultValues });
+    // const ownerId = getOwnerId();
+
+    const { register, handleSubmit, getValues } = useForm({
+        mode: 'onChange',
+        defaultValues: getDefaultValues('1', uuid()),
+    });
 
     const onSubmit = useCallback(() => {
-        // @ts-expect-error
-        modalPromise.resolve(getValues());
+        modalPromise.resolve?.(getValues());
     }, [getValues]);
 
     return (
@@ -40,12 +60,19 @@ function SetMarker() {
             <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} onSubmit={handleSubmit(onSubmit)}>
                 <h3>Новое событие</h3>
                 <TextField label="Название" type="text" {...register('name')} />
-                {/* TODO: починить lable */}
-                <Select label="Тип" {...register('type')}>
-                    <MenuItem value="walk">Прогулка</MenuItem>
-                    <MenuItem value="sport">Спорт</MenuItem>
-                    <MenuItem value="bar">Бар</MenuItem>
-                </Select>
+                <FormControl>
+                    <InputLabel id="type-selector-label">Тип</InputLabel>
+                    <Select
+                        labelId="type-selector-label"
+                        label="Тип"
+                        defaultValue={getValues('type')}
+                        {...register('type')}
+                    >
+                        <MenuItem value="walk">Прогулка</MenuItem>
+                        <MenuItem value="sport">Спорт</MenuItem>
+                        <MenuItem value="bar">Бар</MenuItem>
+                    </Select>
+                </FormControl>
                 <TextField label="Описание" multiline {...register('description')} />
                 <FormControlLabel label="Приватное" control={<Checkbox {...register('isPrivate')} />} />
                 <div>
