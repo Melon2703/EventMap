@@ -36,7 +36,7 @@ function AvailableMarkers() {
 
                                 onModalClose();
                             } catch {
-                                errorHandler();
+                                errorHandler('Parsing error');
                             }
                         }
                     });

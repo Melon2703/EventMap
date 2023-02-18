@@ -1,9 +1,18 @@
-import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+    createContext,
+    PropsWithChildren,
+    useCallback,
+    useContext,
+    useLayoutEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { emptyFunc } from '../../../../utils/empties';
 import { IMark } from './types';
 
 // TODO: сделать нормальный обработчик
-export const errorHandler = () => console.log('Parsing error');
+// eslint-disable-next-line no-console
+export const errorHandler = (error: any) => console.log(error);
 
 interface IMarkersContext {
     stateMarkers: IMark[];
@@ -23,15 +32,19 @@ export const useMarkersContext = () => useContext(MarkersContext);
 export function MarkersContextProvider({ children }: PropsWithChildren) {
     const [stateMarkers, setStateMarkers] = useState<IMark[]>([]);
 
-    // при загрузке страницы вылезала ошибка в   const markers = (JSON.parse(localStorage.getItem('allMarkers') ?? '') ?? []) as IMark[];
-    useEffect(() => {
+    useLayoutEffect(() => {
         try {
             const markers = (JSON.parse(localStorage.getItem('allMarkers') ?? '') ?? []) as IMark[];
+
             setStateMarkers(markers);
         } catch (error) {
             let errorMessage = 'Unexpected error occured. ';
-            if (error instanceof Error) errorMessage += `Failed to parse stored markers: ${error.message}`;
-            console.error(errorMessage);
+
+            if (error instanceof Error) {
+                errorMessage += `Failed to parse stored markers: ${error.message}`;
+            }
+
+            errorHandler(errorMessage);
         }
     }, []);
 

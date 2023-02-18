@@ -5,7 +5,8 @@ import './User.css';
 
 export default function User() {
     return (
-        <div className="user-display vertical-flex">
+        // TODO: сделать popup с menu
+        <div className="user-display">
             <UserAvatar />
             <UserAction />
         </div>

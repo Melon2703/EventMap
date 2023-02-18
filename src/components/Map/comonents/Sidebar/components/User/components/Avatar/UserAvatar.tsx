@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { UserAuth } from '../../../../contexts/AuthContext/AuthContext';
+import { useUserAuth } from '../../../../../../../../contexts/AuthContext/AuthContext';
 import './UserAvatar.css';
 
 export default function UserAvatar() {
-    const { user } = UserAuth();
+    const { user } = useUserAuth();
 
     const avatarUrl = user?.photoURL;
 
-    return (
-        <div className="avatar">
-            {avatarUrl ? (
+    const userIcon = useMemo(
+        () =>
+            avatarUrl ? (
                 <img src={avatarUrl} alt="user" referrerPolicy="no-referrer" />
             ) : (
                 <AccountCircleIcon fontSize="large" />
-            )}
-        </div>
+            ),
+        [avatarUrl],
     );
+
+    return <div className="avatar">{userIcon}</div>;
 }

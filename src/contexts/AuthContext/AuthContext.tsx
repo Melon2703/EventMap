@@ -1,6 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
-
-import React, { useContext, createContext, useState, useEffect, PropsWithChildren, useMemo } from 'react';
+import React, { useContext, createContext, useState, useEffect, PropsWithChildren, useMemo, useCallback } from 'react';
 import {
     getAuth,
     getRedirectResult,
@@ -11,9 +9,12 @@ import {
     signOut,
 } from 'firebase/auth';
 import app from '../../firebase-config';
+import { errorHandler } from '../../components/Map/comonents/Markers/MarksContextProvider';
+
+type TUser = User | null;
 
 interface AuthContextValue {
-    user: User | null;
+    user: TUser;
     googleSignIn: () => void;
     logOut: () => void;
 }
@@ -24,58 +25,46 @@ const AuthContext = createContext<AuthContextValue>({
     logOut: () => {},
 });
 
-export function UserAuth() {
-    return useContext(AuthContext);
-}
+export const useUserAuth = () => useContext(AuthContext);
 
-// https://firebase.google.com/docs/auth/web/start
-// https://firebase.google.com/docs/auth/web/google-signin
+// TODO: должен быть singleton, объединить и инкапсулировать, если будет необходимо // https://firebase.google.com/docs/auth/web/google-signin
+const provider = new GoogleAuthProvider();
+const auth = getAuth(app);
+
 export function AuthContextProvider({ children }: PropsWithChildren) {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<TUser>(null);
 
-    const googleSignIn = async () => {
-        console.log('sign in');
-        const provider = new GoogleAuthProvider();
-        const auth = getAuth(app);
-        // открываем окно с регистрацией\авторизацией через гугл
-        // объект юзера будем принимать через useEffect ниже
-        signInWithRedirect(auth, provider);
-    };
+    // открываем окно с регистрацией\авторизацией через гугл
+    // объект юзера будем принимать через useEffect ниже
+    const googleSignIn = useCallback(async () => signInWithRedirect(auth, provider), []);
 
-    const logOut = async () => {
-        const auth = getAuth(app);
-
+    const logOut = useCallback(async () => {
         try {
             await signOut(auth);
+
             setUser(null);
         } catch (error) {
-            console.log(error);
+            errorHandler(error);
         }
-    };
+    }, []);
 
     // onAuthStateChange
     //  This observer gets called whenever the user's sign-in state changes.
-    //
     // на сколько я понял, вытаскивает объект юзера из localStorage или cookies
     useEffect(() => {
-        const auth = getAuth(app);
-
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
-            if (user) {
-                setUser(user);
-                console.log('OnAuthStateChange User: ', user);
+        const unsubscribe = onAuthStateChanged(auth, (newUser: TUser) => {
+            if (newUser) {
+                setUser(newUser);
             }
         });
+
         return () => {
             unsubscribe();
         };
-    });
+    }, []);
 
     // getRedirectResult для обработки объекта юзера после редиректа
     useEffect(() => {
-        const auth = getAuth(app);
-
         getRedirectResult(auth)
             .then((result) => {
                 if (result?.user) {
@@ -83,12 +72,11 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
                 }
             })
             .catch((error) => {
-                const errorMessage = error.message;
-                console.log(errorMessage);
+                errorHandler(error.message);
             });
     }, []);
 
-    const value = useMemo(() => ({ user, googleSignIn, logOut }), [user]);
+    const value = useMemo(() => ({ user, googleSignIn, logOut }), [googleSignIn, logOut, user]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
