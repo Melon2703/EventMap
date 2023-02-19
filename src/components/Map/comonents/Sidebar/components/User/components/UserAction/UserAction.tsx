@@ -5,6 +5,8 @@ import { useUserAuth } from '../../../../../../../../contexts/AuthContext/AuthCo
 export default function UserAction() {
     const { user, googleSignIn, logOut } = useUserAuth();
 
+    const userId = user.id;
+
     const handleSignIn = useCallback(() => {
         googleSignIn();
     }, [googleSignIn]);
@@ -14,12 +16,12 @@ export default function UserAction() {
     }, [logOut]);
 
     const buttonInfo = useMemo(() => {
-        const handler = user ? handleLogOut : handleSignIn;
+        const handler = userId ? handleLogOut : handleSignIn;
 
-        const buttonText = user ? 'Выйти' : 'Войти';
+        const buttonText = userId ? 'Выйти' : 'Войти';
 
         return { handler, buttonText };
-    }, [handleLogOut, handleSignIn, user]);
+    }, [handleLogOut, handleSignIn, userId]);
 
     return <Button onClick={buttonInfo.handler}>{buttonInfo.buttonText}</Button>;
 }

@@ -6,7 +6,7 @@ import './UserAvatar.css';
 export default function UserAvatar() {
     const { user } = useUserAuth();
 
-    const avatarUrl = user?.photoURL;
+    const avatarUrl = user.iconUrl;
 
     const userIcon = useMemo(
         () =>

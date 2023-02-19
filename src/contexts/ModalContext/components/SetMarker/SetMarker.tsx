@@ -14,8 +14,7 @@ import {
 import React, { useCallback } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { useForm } from 'react-hook-form';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { v4 as uuid } from 'uuid';
+import { useUserAuth } from '../../../AuthContext/AuthContext';
 // eslint-disable-next-line import/no-cycle
 import { modalPromise, useModal } from '../../ModalContext';
 import EventInfo from './types';
@@ -31,24 +30,24 @@ const modalSx: SxProps<Theme> = {
     borderRadius: '24px',
 };
 
-const getDefaultValues = (ownerId: string, id: string, type = 'walk'): EventInfo => ({
+const getDefaultValues = (ownerId: string, type = 'walk'): Omit<EventInfo, 'id'> => ({
     description: '',
     isPrivate: false,
     type,
     name: '',
     ownerId,
-    // TODO: id должен стваиться на бэке
-    id,
 });
 
 function SetMarker() {
     const { onModalClose } = useModal();
 
-    // const ownerId = getOwnerId();
+    const {
+        user: { id: ownerId },
+    } = useUserAuth();
 
     const { register, handleSubmit, getValues } = useForm({
         mode: 'onChange',
-        defaultValues: getDefaultValues('1', uuid()),
+        defaultValues: getDefaultValues(ownerId),
     });
 
     const onSubmit = useCallback(() => {

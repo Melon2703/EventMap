@@ -1,29 +1,20 @@
-import React, {
-    createContext,
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useLayoutEffect,
-    useMemo,
-    useState,
-} from 'react';
-import { emptyFunc } from '../../../../utils/empties';
-import { IMark } from './types';
+import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createMarker, getAllMarkers, removeMarker } from '../../../../api/markers';
+import { useUserAuth } from '../../../../contexts/AuthContext/AuthContext';
 
-// TODO: сделать нормальный обработчик
-// eslint-disable-next-line no-console
-export const errorHandler = (error: any) => console.log(error);
+import { errorHandler } from '../../../../utils/errorHandler';
+import { IMark } from './types';
 
 interface IMarkersContext {
     stateMarkers: IMark[];
-    setMarker: (newMark: IMark) => void;
-    clearMarker: (clearId: string) => void;
+    setMarker: (newMark: Omit<IMark, 'id'>) => Promise<void>;
+    clearMarker: (clearId: string) => Promise<void>;
 }
 
 const MarkersContext = createContext<IMarkersContext>({
     stateMarkers: [],
-    setMarker: emptyFunc,
-    clearMarker: emptyFunc,
+    setMarker: Promise.resolve,
+    clearMarker: Promise.resolve,
 });
 
 export const useMarkersContext = () => useContext(MarkersContext);
@@ -32,32 +23,54 @@ export const useMarkersContext = () => useContext(MarkersContext);
 export function MarkersContextProvider({ children }: PropsWithChildren) {
     const [stateMarkers, setStateMarkers] = useState<IMark[]>([]);
 
-    useLayoutEffect(() => {
-        try {
-            const markers = (JSON.parse(localStorage.getItem('allMarkers') ?? '') ?? []) as IMark[];
+    const {
+        user: { id: ownerId },
+    } = useUserAuth();
 
-            setStateMarkers(markers);
-        } catch (error) {
-            let errorMessage = 'Unexpected error occured. ';
+    useEffect(() => {
+        const getMarkers = async () => {
+            try {
+                const markers = await getAllMarkers(ownerId);
 
-            if (error instanceof Error) {
-                errorMessage += `Failed to parse stored markers: ${error.message}`;
+                setStateMarkers(markers);
+            } catch (error) {
+                errorHandler(error);
             }
+        };
 
-            errorHandler(errorMessage);
+        if (ownerId) {
+            getMarkers();
+        } else {
+            setStateMarkers([]);
         }
+    }, [ownerId, stateMarkers.length]);
+
+    const setMarkers = useCallback((marks: IMark[]) => {
+        setStateMarkers(marks);
     }, []);
 
-    const setMarker = useCallback((newMark: IMark) => {
-        setStateMarkers((prev) => [...prev, newMark]);
-    }, []);
+    const setMarker = useCallback(
+        (newMark: Omit<IMark, 'id'>) =>
+            createMarker(newMark).then(() => {
+                getAllMarkers(ownerId).then((markers) => {
+                    setMarkers(markers);
+                });
+            }),
+        [ownerId, setMarkers],
+    );
 
-    const clearMarker = useCallback((clearId: string) => {
-        setStateMarkers((prev) => prev.filter(({ id }) => id !== clearId));
-    }, []);
+    const clearMarker = useCallback(
+        (id: string) =>
+            removeMarker(id).then(() => {
+                getAllMarkers(ownerId).then((markers) => {
+                    setMarkers(markers);
+                });
+            }),
+        [ownerId, setMarkers],
+    );
 
     const contextValue = useMemo(
-        () => ({ stateMarkers, setMarker, clearMarker }),
+        () => ({ stateMarkers, clearMarker, setMarker }),
         [clearMarker, setMarker, stateMarkers],
     );
 
