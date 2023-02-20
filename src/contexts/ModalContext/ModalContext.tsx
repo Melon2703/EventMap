@@ -40,9 +40,9 @@ interface IModalPromiseController {
 
 // TODO: унести
 class ModalPromiseController implements IModalPromiseController {
-    instance: Promise<EventInfo> | null;
+    instance: Promise<Omit<EventInfo, 'id'>> | null;
 
-    resolve: ((result: EventInfo) => void) | null;
+    resolve: ((result: Omit<EventInfo, 'id'>) => void) | null;
 
     constructor() {
         this.instance = null;
@@ -52,7 +52,7 @@ class ModalPromiseController implements IModalPromiseController {
 
     getNewPromise() {
         this.instance = new Promise((resolve) => {
-            this.resolve = (result: EventInfo) => resolve(result);
+            this.resolve = (result: Omit<EventInfo, 'id'>) => resolve(result);
         });
     }
 }

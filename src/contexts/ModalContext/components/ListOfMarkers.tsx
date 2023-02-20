@@ -3,6 +3,7 @@ import { Box, IconButton, List, Switch, SxProps, Theme } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useMarkersContext } from '../../../components/Map/comonents/Markers/MarksContextProvider';
 import { IMark } from '../../../components/Map/comonents/Markers/types';
+import { useUserAuth } from '../../AuthContext/AuthContext';
 
 const modalSx: SxProps<Theme> = {
     width: 250,
@@ -19,16 +20,18 @@ const modalSx: SxProps<Theme> = {
     alignItems: 'center',
 };
 
-const userId = '1';
-
 function ListOfMarkers() {
     const { stateMarkers, clearMarker } = useMarkersContext();
+
+    const {
+        user: { id: ownerId },
+    } = useUserAuth();
 
     const [isPublic, setIsPublic] = useState(false);
 
     const onClear = useCallback(
-        (id: string) => {
-            clearMarker(id);
+        async (id: string) => {
+            await clearMarker(id);
         },
         [clearMarker],
     );
@@ -41,7 +44,7 @@ function ListOfMarkers() {
         () =>
             stateMarkers.reduce(
                 ({ usersMarks: uMarks, publicMarkers: pMarkers }, marker) => {
-                    if (marker.ownerId === userId) {
+                    if (marker.ownerId === ownerId) {
                         uMarks.push(marker);
                     } else {
                         pMarkers.push(marker);
@@ -51,7 +54,7 @@ function ListOfMarkers() {
                 },
                 { usersMarks: [], publicMarkers: [] } as { usersMarks: IMark[]; publicMarkers: IMark[] },
             ),
-        [stateMarkers],
+        [ownerId, stateMarkers],
     );
 
     return (

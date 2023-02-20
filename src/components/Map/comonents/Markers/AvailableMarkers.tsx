@@ -2,10 +2,11 @@ import React from 'react';
 import { useMapEvents } from 'react-leaflet';
 import { useModal, modalPromise } from '../../../../contexts/ModalContext/ModalContext';
 import { ModalTypes } from '../../../../contexts/ModalContext/types';
+import { errorHandler } from '../../../../utils/errorHandler';
 import { maxMarkers } from './common';
 import CustomMarker from './CustomMarker/CustomMarker';
 
-import { errorHandler, useMarkersContext } from './MarksContextProvider';
+import { useMarkersContext } from './MarksContextProvider';
 
 function AvailableMarkers() {
     const { stateMarkers, setMarker } = useMarkersContext();
@@ -22,21 +23,12 @@ function AvailableMarkers() {
                         if (eventInfo) {
                             const { latlng } = event;
 
-                            const newMark = { position: latlng, ...eventInfo };
+                            const newMarker = { position: latlng, ...eventInfo };
 
-                            const markersTwin = [...stateMarkers];
-
-                            markersTwin.push(newMark);
-
-                            // TODO: переписать на логику с бэком
                             try {
-                                localStorage.setItem('allMarkers', JSON.stringify(markersTwin));
-
-                                setMarker(newMark);
-
-                                onModalClose();
-                            } catch {
-                                errorHandler();
+                                setMarker(newMarker).then(onModalClose);
+                            } catch (error) {
+                                errorHandler(error);
                             }
                         }
                     });
