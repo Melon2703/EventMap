@@ -2,8 +2,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Box, IconButton, List, Switch, SxProps, Theme } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useMarkersContext } from '../../../components/Map/comonents/Markers/MarksContextProvider';
-import { IMark } from '../../../components/Map/comonents/Markers/types';
-import { useUserAuth } from '../../AuthContext/AuthContext';
+
+import { useGetUserId } from '../../AuthContext/hooks';
+import { EventInfo } from './SetMarker/types';
 
 const modalSx: SxProps<Theme> = {
     width: 250,
@@ -23,9 +24,7 @@ const modalSx: SxProps<Theme> = {
 function ListOfMarkers() {
     const { stateMarkers, clearMarker } = useMarkersContext();
 
-    const {
-        user: { id: ownerId },
-    } = useUserAuth();
+    const ownerId = useGetUserId();
 
     const [isPublic, setIsPublic] = useState(false);
 
@@ -40,19 +39,22 @@ function ListOfMarkers() {
         setIsPublic(checked);
     }, []);
 
-    const { usersMarks, publicMarkers } = useMemo(
+    const { usersMarkers, publicMarkers } = useMemo(
         () =>
             stateMarkers.reduce(
-                ({ usersMarks: uMarks, publicMarkers: pMarkers }, marker) => {
+                ({ usersMarkers: uMarks, publicMarkers: pMarkers }, marker) => {
                     if (marker.ownerId === ownerId) {
                         uMarks.push(marker);
-                    } else {
+                        // TODO: ПРОВЕРКИ НА ФРОНТЕ БЫТЬ НЕ ДОЛЖНО. Эта проверка обязательна должна быть на бэке,
+                        // то есть надо проверять, разрешен ли пользователь, который запрашивает метки доступ к приватным событям других пользователей,
+                        // иначе эти события можно посмотреть в запросе
+                    } else if (!marker.isPrivate) {
                         pMarkers.push(marker);
                     }
 
-                    return { usersMarks: uMarks, publicMarkers: pMarkers };
+                    return { usersMarkers: uMarks, publicMarkers: pMarkers };
                 },
-                { usersMarks: [], publicMarkers: [] } as { usersMarks: IMark[]; publicMarkers: IMark[] },
+                { usersMarkers: [], publicMarkers: [] } as { usersMarkers: EventInfo[]; publicMarkers: EventInfo[] },
             ),
         [ownerId, stateMarkers],
     );
@@ -63,13 +65,15 @@ function ListOfMarkers() {
                 Личные <Switch value={isPublic} onChange={onChange} /> Публичные
             </div>
             <List style={{ width: '100%' }}>
-                {(isPublic ? publicMarkers : usersMarks).map(({ name, position: { lat, lng }, id }) => (
+                {(isPublic ? publicMarkers : usersMarkers).map(({ name, position: { lat, lng }, id }) => (
                     // TODO: вынести в отедльную компоненту
                     <li key={`${lat}${lng}`}>
                         {name}
-                        <IconButton className="icon" onClick={() => onClear(id)}>
-                            <DeleteIcon />
-                        </IconButton>
+                        {!isPublic ? (
+                            <IconButton className="icon" onClick={() => onClear(id)}>
+                                <DeleteIcon />
+                            </IconButton>
+                        ) : null}
                     </li>
                 ))}
             </List>

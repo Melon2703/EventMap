@@ -13,11 +13,7 @@ const reducer = (state: ModalState, action: Action): ModalState => {
                 type: action.payload,
             };
         case ActionTypes.OPEN_MODAL:
-            return {
-                ...state,
-                type: action.payload.type,
-                isOpen: action.payload.isOpen,
-            };
+            return action.payload;
         default:
             return state;
     }

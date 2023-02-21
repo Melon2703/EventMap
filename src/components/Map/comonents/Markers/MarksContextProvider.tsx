@@ -1,18 +1,21 @@
 import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { createMarker, getAllMarkers, removeMarker } from '../../../../api/markers';
-import { useUserAuth } from '../../../../contexts/AuthContext/AuthContext';
+import { useGetUserId } from '../../../../contexts/AuthContext/hooks';
+import { EventInfo } from '../../../../contexts/ModalContext/components/SetMarker/types';
 
 import { errorHandler } from '../../../../utils/errorHandler';
-import { IMark } from './types';
+import { emptyFunc } from '../../../../utils/empties';
 
-interface IMarkersContext {
-    stateMarkers: IMark[];
-    setMarker: (newMark: Omit<IMark, 'id'>) => Promise<void>;
+interface EventInfoersContext {
+    stateMarkers: EventInfo[];
+    setMarker: (newMark: Omit<EventInfo, 'id'>) => Promise<void>;
     clearMarker: (clearId: string) => Promise<void>;
+    setStateMarkers: React.Dispatch<React.SetStateAction<EventInfo[]>>;
 }
 
-const MarkersContext = createContext<IMarkersContext>({
+const MarkersContext = createContext<EventInfoersContext>({
     stateMarkers: [],
+    setStateMarkers: emptyFunc,
     setMarker: Promise.resolve,
     clearMarker: Promise.resolve,
 });
@@ -21,56 +24,51 @@ export const useMarkersContext = () => useContext(MarkersContext);
 
 // TODO: перейти на reactQuery, тогда этот контекст нужен не будет
 export function MarkersContextProvider({ children }: PropsWithChildren) {
-    const [stateMarkers, setStateMarkers] = useState<IMark[]>([]);
+    const [stateMarkers, setStateMarkers] = useState<EventInfo[]>([]);
 
-    const {
-        user: { id: ownerId },
-    } = useUserAuth();
+    const userId = useGetUserId();
 
     useEffect(() => {
         const getMarkers = async () => {
             try {
-                const markers = await getAllMarkers(ownerId);
+                const markers = await getAllMarkers();
 
+                // TODO: возвращать publicMarkers & userMarkers тут
                 setStateMarkers(markers);
             } catch (error) {
                 errorHandler(error);
             }
         };
 
-        if (ownerId) {
-            getMarkers();
-        } else {
-            setStateMarkers([]);
-        }
-    }, [ownerId, stateMarkers.length]);
+        getMarkers();
+    }, [stateMarkers.length, userId]);
 
-    const setMarkers = useCallback((marks: IMark[]) => {
+    const setMarkers = useCallback((marks: EventInfo[]) => {
         setStateMarkers(marks);
     }, []);
 
     const setMarker = useCallback(
-        (newMark: Omit<IMark, 'id'>) =>
+        (newMark: Omit<EventInfo, 'id'>) =>
             createMarker(newMark).then(() => {
-                getAllMarkers(ownerId).then((markers) => {
+                getAllMarkers().then((markers) => {
                     setMarkers(markers);
                 });
             }),
-        [ownerId, setMarkers],
+        [setMarkers],
     );
 
     const clearMarker = useCallback(
         (id: string) =>
             removeMarker(id).then(() => {
-                getAllMarkers(ownerId).then((markers) => {
+                getAllMarkers().then((markers) => {
                     setMarkers(markers);
                 });
             }),
-        [ownerId, setMarkers],
+        [setMarkers],
     );
 
     const contextValue = useMemo(
-        () => ({ stateMarkers, clearMarker, setMarker }),
+        () => ({ stateMarkers, clearMarker, setMarker, setStateMarkers }),
         [clearMarker, setMarker, stateMarkers],
     );
 
