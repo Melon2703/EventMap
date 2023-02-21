@@ -39,8 +39,4 @@ function Map({ className }: MapProps) {
     );
 }
 
-Map.defaultProps = {
-    className: '',
-};
-
 export default Map;

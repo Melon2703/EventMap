@@ -14,7 +14,7 @@ export default function ShowMarkersListButton() {
 
     return (
         <IconButton className="icon" onClick={showMarkersList}>
-            <ListAltRoundedIcon />
+            <ListAltRoundedIcon fontSize="large" />
         </IconButton>
     );
 }

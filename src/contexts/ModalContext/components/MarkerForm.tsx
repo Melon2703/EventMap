@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useModal } from '../context';
 
 import { EmptyEventInfo, EventInfo } from './SetMarker/types';
 import { useGetUserId } from '../../AuthContext/hooks';
@@ -33,11 +32,10 @@ interface MarkerFormProps {
     onSubmit: (value: EventInfo) => void;
     continueText: string;
     defaultValues: EmptyEventInfo;
+    secondButton?: JSX.Element;
 }
 
-function MarkerForm({ onSubmit, continueText, defaultValues }: MarkerFormProps) {
-    const { onModalClose } = useModal();
-
+function MarkerForm({ onSubmit, continueText, defaultValues, secondButton }: MarkerFormProps) {
     const userId = useGetUserId();
 
     const canEdit = userId === defaultValues.ownerId;
@@ -70,9 +68,8 @@ function MarkerForm({ onSubmit, continueText, defaultValues }: MarkerFormProps) 
                 {canEdit ? (
                     <FormControlLabel label="Приватное" control={<Checkbox {...register('isPrivate')} />} />
                 ) : null}
-                {/* TODO: скрывать кнопку действия, если открыл модалку ивента другого пользователя */}
                 <div>
-                    <Button onClick={onModalClose}>Отмена</Button>
+                    {secondButton}
                     {canEdit ? <Button type="submit">{continueText}</Button> : null}
                 </div>
             </form>

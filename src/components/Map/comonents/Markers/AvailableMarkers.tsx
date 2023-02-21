@@ -7,7 +7,7 @@ import { modalPromise } from '../../../../contexts/ModalContext/modalPromise';
 import { ModalTypes } from '../../../../contexts/ModalContext/types';
 import { errorHandler } from '../../../../utils/errorHandler';
 import { maxMarkers } from './common';
-import CustomMarker from './CustomMarker/CustomMarker';
+import { CustomMarker } from './CustomMarker/CustomMarker';
 
 import { useMarkersContext } from './MarksContextProvider';
 
@@ -23,7 +23,7 @@ function AvailableMarkers() {
 
     useMapEvents({
         click(event) {
-            if (openModalCondition) {
+            if (openModalCondition && userId) {
                 onModalOpen(ModalTypes.SET_POINT, () => {
                     modalPromise.instance?.then((eventInfo) => {
                         if (eventInfo) {

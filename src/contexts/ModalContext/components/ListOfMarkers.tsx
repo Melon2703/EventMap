@@ -1,14 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Box, IconButton, List, Switch, SxProps, Theme } from '@mui/material';
+import { Box, IconButton, List, MenuItem, Switch, SxProps, Theme } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useMarkersContext } from '../../../components/Map/comonents/Markers/MarksContextProvider';
 
 import { useGetUserId } from '../../AuthContext/hooks';
 import { EventInfo } from './SetMarker/types';
+import { useMarkerOpener } from '../../../components/Map/comonents/Markers/CustomMarker/hooks';
 
 const modalSx: SxProps<Theme> = {
-    width: 250,
-    minHeight: 200,
+    width: 320,
+    height: 250,
     background: 'white',
     position: 'absolute',
     left: '50%',
@@ -29,8 +30,8 @@ function ListOfMarkers() {
     const [isPublic, setIsPublic] = useState(false);
 
     const onClear = useCallback(
-        async (id: string) => {
-            await clearMarker(id);
+        (id: string) => {
+            clearMarker(id);
         },
         [clearMarker],
     );
@@ -59,23 +60,41 @@ function ListOfMarkers() {
         [ownerId, stateMarkers],
     );
 
+    const markerOpener = useMarkerOpener();
+
     return (
         <Box sx={modalSx}>
             <div>
                 Личные <Switch value={isPublic} onChange={onChange} /> Публичные
             </div>
-            <List style={{ width: '100%' }}>
-                {(isPublic ? publicMarkers : usersMarkers).map(({ name, position: { lat, lng }, id }) => (
+            <List style={{ width: '100%', overflow: 'scroll' }}>
+                {(isPublic ? publicMarkers : usersMarkers).map((eventInfo) => {
+                    const { name, id } = eventInfo;
+
                     // TODO: вынести в отедльную компоненту
-                    <li key={`${lat}${lng}`}>
-                        {name}
-                        {!isPublic ? (
-                            <IconButton className="icon" onClick={() => onClear(id)}>
-                                <DeleteIcon />
-                            </IconButton>
-                        ) : null}
-                    </li>
-                ))}
+                    return (
+                        <MenuItem
+                            style={{ borderRadius: 8, minHeight: 52 }}
+                            onClick={() => markerOpener(eventInfo)}
+                            key={id}
+                        >
+                            {name}
+                            {!isPublic ? (
+                                <IconButton
+                                    style={{ marginLeft: 'auto' }}
+                                    className="icon"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+
+                                        onClear(id);
+                                    }}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            ) : null}
+                        </MenuItem>
+                    );
+                })}
             </List>
         </Box>
     );

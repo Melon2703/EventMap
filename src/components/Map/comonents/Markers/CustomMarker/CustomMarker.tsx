@@ -5,8 +5,7 @@ import L from 'leaflet';
 import PlaceRoundedIcon from '@mui/icons-material/PlaceRounded';
 import ReactDOMServer from 'react-dom/server';
 import { EventInfo } from '../../../../../contexts/ModalContext/components/SetMarker/types';
-import { useModal } from '../../../../../contexts/ModalContext/context';
-import { ModalTypes } from '../../../../../contexts/ModalContext/types';
+import { useMarkerOpener } from './hooks';
 
 const customIcon = (isOwn: boolean) =>
     new L.DivIcon({
@@ -19,20 +18,16 @@ interface CustomMarkerProps {
     eventInfo: EventInfo;
     isOwn: boolean;
 }
-function CustomMarker({ eventInfo, isOwn }: CustomMarkerProps) {
+export const CustomMarker: React.FC<CustomMarkerProps> = ({ eventInfo, isOwn }) => {
     const { position } = eventInfo;
 
-    const { onModalOpen } = useModal();
+    const markerOpener = useMarkerOpener();
 
-    const onClick = useCallback(() => {
-        onModalOpen(ModalTypes.SHOW_EDIT_EVENT, undefined, eventInfo);
-    }, [eventInfo, onModalOpen]);
+    const onCLick = useCallback(() => markerOpener(eventInfo), [eventInfo, markerOpener]);
 
     return (
-        <Marker eventHandlers={{ click: onClick }} position={[position.lat, position.lng]} icon={customIcon(isOwn)}>
+        <Marker eventHandlers={{ click: onCLick }} position={[position.lat, position.lng]} icon={customIcon(isOwn)}>
             <Tooltip direction="bottom">{eventInfo.name}</Tooltip>
         </Marker>
     );
-}
-
-export default CustomMarker;
+};

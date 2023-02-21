@@ -1,9 +1,11 @@
 import React, { useCallback } from 'react';
+import { Button } from '@mui/material';
 import { modalPromise } from '../../modalPromise';
 
 import MarkerForm from '../MarkerForm';
 import { EmptyEventInfo } from './types';
 import { useGetUserId } from '../../../AuthContext/hooks';
+import { useModal } from '../../context';
 
 const getDefaultValues = (ownerId: string, type = 'walk'): EmptyEventInfo => ({
     description: '',
@@ -16,11 +18,20 @@ const getDefaultValues = (ownerId: string, type = 'walk'): EmptyEventInfo => ({
 function SetMarker() {
     const ownerId = useGetUserId();
 
+    const { onModalClose } = useModal();
+
     const onSubmit = useCallback((value: EmptyEventInfo) => {
         modalPromise.resolve?.(value);
     }, []);
 
-    return <MarkerForm defaultValues={getDefaultValues(ownerId)} continueText="Продолжить" onSubmit={onSubmit} />;
+    return (
+        <MarkerForm
+            secondButton={<Button onClick={onModalClose}>Отмена</Button>}
+            defaultValues={getDefaultValues(ownerId)}
+            continueText="Создать"
+            onSubmit={onSubmit}
+        />
+    );
 }
 
 export default SetMarker;
