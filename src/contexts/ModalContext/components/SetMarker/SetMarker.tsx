@@ -15,7 +15,7 @@ const getDefaultValues = (ownerId: string, type = 'walk'): EmptyEventInfo => ({
     ownerId,
 });
 
-function SetMarker() {
+const SetMarker = () => {
     const ownerId = useGetUserId();
 
     const { onModalClose } = useModal();
@@ -32,6 +32,6 @@ function SetMarker() {
             onSubmit={onSubmit}
         />
     );
-}
+};
 
 export default SetMarker;

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { IconButton, Popover, List, MenuItem } from '@mui/material';
+import { IconButton, MenuItem, Menu } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { useUserAuth } from '../../../../../../../../contexts/AuthContext/AuthContext';
 import './UserAvatar.css';
 
@@ -42,7 +43,7 @@ export default function UserAvatar() {
             <IconButton className="icon" onClick={handleClick}>
                 {userIcon}
             </IconButton>
-            <Popover
+            <Menu
                 open={isOpen}
                 anchorEl={anchorEl}
                 onClose={handleClose}
@@ -51,13 +52,15 @@ export default function UserAvatar() {
                     horizontal: 'left',
                 }}
             >
-                <List>
-                    <MenuItem>Настройки</MenuItem>
-                    <MenuItem>
-                        <LogOutButton />
-                    </MenuItem>
-                </List>
-            </Popover>
+                <MenuItem onClick={handleClose}>
+                    <Link style={{ textDecoration: 'none', color: 'inherit' }} to="/user-settings">
+                        Настройки
+                    </Link>
+                </MenuItem>
+                <MenuItem onClick={handleClose}>
+                    <LogOutButton />
+                </MenuItem>
+            </Menu>
         </>
     ) : (
         <LogInButton />

@@ -66,7 +66,10 @@ function MarkerForm({ onSubmit, continueText, defaultValues, secondButton }: Mar
                 </FormControl>
                 <TextField disabled={!canEdit} label="Описание" multiline {...register('description')} />
                 {canEdit ? (
-                    <FormControlLabel label="Приватное" control={<Checkbox {...register('isPrivate')} />} />
+                    <FormControlLabel
+                        label="Приватное"
+                        control={<Checkbox defaultChecked={getValues('isPrivate')} {...register('isPrivate')} />}
+                    />
                 ) : null}
                 <div>
                     {secondButton}

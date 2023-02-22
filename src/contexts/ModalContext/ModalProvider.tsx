@@ -20,7 +20,6 @@ const initialState: ModalState = {
     data: null,
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export function ModalProvider({ children }: PropsWithChildren) {
     const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -56,7 +55,9 @@ export function ModalProvider({ children }: PropsWithChildren) {
                 open={isOpen}
                 onClose={onModalClose}
             >
-                <ModalComponent data={state.data} dispatch={dispatch} />
+                <div>
+                    <ModalComponent data={state.data} />
+                </div>
             </Modal>
         </ModalContext.Provider>
     );

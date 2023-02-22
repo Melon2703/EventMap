@@ -24,7 +24,7 @@ export type Action = ChangeModalVisibilityAction | SetModalTypeAction | OpenModa
 export type ModalData = any;
 
 export interface ModalProps {
-    dispatch: React.Dispatch<Action>;
+    dispatch?: React.Dispatch<Action>;
     data?: ModalData;
 }
 

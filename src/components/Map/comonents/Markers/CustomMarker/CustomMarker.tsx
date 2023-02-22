@@ -9,9 +9,11 @@ import { useMarkerOpener } from './hooks';
 
 const customIcon = (isOwn: boolean) =>
     new L.DivIcon({
-        html: ReactDOMServer.renderToString(<PlaceRoundedIcon style={{ fill: isOwn ? 'blue' : 'red' }} />),
+        html: ReactDOMServer.renderToString(
+            <PlaceRoundedIcon style={{ fill: isOwn ? 'blue' : 'red', height: 35, width: 35 }} />,
+        ),
         className: 'custom-icon',
-        iconSize: [50, 50],
+        iconSize: [40, 70],
     });
 
 interface CustomMarkerProps {
